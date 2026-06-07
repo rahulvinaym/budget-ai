@@ -67,7 +67,5 @@ Effective cost: ₹0/month
 
 ## Built by
 
-Rahul — Chief Manager, Credit & Product Strategy
+Rahul Vinay
 Building in public while learning AI and prompt engineering
-
-LinkedIn: [Your LinkedIn URL]
