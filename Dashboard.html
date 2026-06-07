@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Budget.AI</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#0a0a0f;font-family:'Segoe UI',sans-serif;color:#e8e8f0;min-height:100vh}
+.header{background:linear-gradient(135deg,#0f0f1a,#1a1a2e);padding:20px 28px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid rgba(255,255,255,0.06)}
+.header h1{font-size:22px;font-weight:700}
+.fy{font-size:10px;letter-spacing:3px;color:#4d96ff;text-transform:uppercase;margin-bottom:4px}
+.rate-box{background:rgba(77,150,255,0.1);border:1px solid rgba(77,150,255,0.2);border-radius:10px;padding:8px 16px;text-align:right}
+.rate-label{font-size:9px;color:#4d96ff;letter-spacing:2px;text-transform:uppercase}
+.rate-val{font-size:24px;font-weight:800}
+.status{background:rgba(77,150,255,0.06);border-bottom:1px solid rgba(77,150,255,0.1);padding:10px 28px;display:flex;gap:24px;flex-wrap:wrap}
+.status span{font-size:11px;font-weight:600}
+.body{padding:20px 28px}
+.cards{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-bottom:20px}
+.card{background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.07);border-radius:12px;padding:14px;transition:transform 0.2s;cursor:default}
+.card:hover{transform:translateY(-2px)}
+.card-icon{font-size:16px;margin-bottom:5px}
+.card-label{font-size:10px;color:#888;margin-bottom:3px;letter-spacing:0.3px}
+.card-val{font-size:16px;font-weight:700;letter-spacing:-0.5px}
+.card-sub{font-size:9px;color:#555;margin-top:2px}
+.grid2{display:grid;grid-template-columns:1fr 280px;gap:16px;margin-bottom:16px}
+.panel{background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.06);border-radius:14px;padding:18px}
+.panel-title{font-size:12px;font-weight:700;color:#4d96ff;margin-bottom:14px;letter-spacing:0.3px}
+.bars{display:flex;align-items:flex-end;gap:6px;height:110px;margin-bottom:6px}
+.bar-col{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;cursor:pointer}
+.bar-col:hover .bar{opacity:1!important}
+.bar{width:100%;border-radius:3px 3px 0 0;transition:all 0.3s;min-height:2px}
+.bar-lbl{font-size:8px;color:#555;transition:color 0.2s}
+.bar-col.active .bar-lbl{color:#4d96ff;font-weight:700}
+.stack{display:flex;align-items:flex-end;gap:6px;height:55px;margin-bottom:8px}
+.stack-col{flex:1;display:flex;flex-direction:column;justify-content:flex-end;cursor:pointer}
+.legend{display:flex;gap:12px;flex-wrap:wrap}
+.leg{display:flex;align-items:center;gap:4px;font-size:10px;color:#666}
+.leg-dot{width:8px;height:8px;border-radius:2px}
+table{width:100%;border-collapse:collapse;font-size:12px}
+th{background:#0f4c81;color:#fff;padding:7px 10px;text-align:left;font-size:10px;font-weight:600}
+td{padding:7px 10px;border-bottom:1px solid rgba(255,255,255,0.04)}
+tr:nth-child(even) td{background:rgba(255,255,255,0.02)}
+.pos{color:#6bcb77;font-weight:700}
+.neg{color:#ff6b6b;font-weight:700}
+.donut-wrap{display:flex;justify-content:center;margin-bottom:14px;position:relative}
+.donut-center{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);text-align:center}
+.donut-pct{font-size:13px;font-weight:700}
+.donut-lbl{font-size:9px;color:#555}
+.cat-rows{display:flex;flex-direction:column;gap:8px}
+.cat-row-label{display:flex;justify-content:space-between;margin-bottom:3px}
+.cat-row-name{font-size:11px;color:#888}
+.cat-row-val{font-size:11px;font-weight:600}
+.prog-bg{background:rgba(255,255,255,0.05);border-radius:4px;height:3px}
+.prog-fill{height:100%;border-radius:4px;transition:width 0.6s}
+.health{background:linear-gradient(135deg,rgba(77,150,255,0.06),rgba(107,203,119,0.06));border:1px solid rgba(77,150,255,0.1);border-radius:14px;padding:16px 22px;display:flex;justify-content:space-between;align-items:center;margin-bottom:16px}
+.health-gauges{display:flex;gap:20px}
+.gauge{text-align:center}
+.gauge-ring{width:52px;height:52px;border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 4px}
+.gauge-inner{width:38px;height:38px;border-radius:50%;background:#0a0a0f;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700}
+.gauge-name{font-size:9px;color:#555}
+.gauge-target{font-size:8px;color:#333}
+.horizon-btn{background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);border-radius:8px;padding:7px 14px;color:#888;font-size:11px;cursor:pointer;font-weight:600;transition:all 0.2s}
+.horizon-btn.on{background:rgba(107,203,119,0.12);border-color:rgba(107,203,119,0.3);color:#6bcb77}
+.horizon-panel{overflow:hidden;max-height:0;transition:max-height 0.4s ease}
+.horizon-panel.open{max-height:400px}
+.horizon-inner{padding:18px;border:1px solid rgba(107,203,119,0.1);border-radius:14px;background:rgba(107,203,119,0.03);margin-bottom:16px}
+.tabs{display:flex;gap:6px;margin-bottom:14px}
+.tab{padding:4px 12px;border-radius:20px;font-size:10px;cursor:pointer;font-weight:600;border:1px solid rgba(255,255,255,0.08);color:#555;background:rgba(255,255,255,0.03)}
+.tab.on{background:rgba(77,150,255,0.2);border-color:rgba(77,150,255,0.4);color:#4d96ff}
+.fy-tabs{display:flex;gap:6px}
+.yr-card{background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.06);border-radius:10px;padding:11px 14px;display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+.yr-card.current{background:rgba(107,203,119,0.07);border-color:rgba(107,203,119,0.2)}
+.total-card{background:rgba(77,150,255,0.08);border:1px solid rgba(77,150,255,0.2);border-radius:10px;padding:11px 14px;display:flex;justify-content:space-between;align-items:center}
+.loading{text-align:center;padding:80px;color:#555;font-size:14px}
+.error{text-align:center;padding:80px;color:#ff6b6b;font-size:13px}
+</style>
+</head>
+<body>
+<div id="root"><div class="loading">⏳ Loading your financial data...</div></div>
+
+<script>
+var D = null;
+var selMonth = -1;
+var horizonOpen = false;
+var horizonTab = 'annual';
+var horizonFY = 'FY25-26';
+
+function fmtL(n){
+  n = Math.round(Math.abs(n));
+  if(n>=10000000) return '₹'+(n/10000000).toFixed(1)+'Cr';
+  if(n>=100000)   return '₹'+(n/100000).toFixed(1)+'L';
+  if(n>=1000)     return '₹'+(n/1000).toFixed(0)+'K';
+  return '₹'+n;
+}
+function fmtFull(n){ return '₹'+Math.abs(Math.round(n)).toLocaleString('en-IN'); }
+function pct(a,b){ return b>0?Math.round((a/b)*100):0; }
+
+google.script.run
+  .withSuccessHandler(function(data){
+    D = data;
+    // pick last active month as default
+    for(var i=D.monthly.length-1;i>=0;i--){
+      if(D.monthly[i].income||D.monthly[i].fixed||D.monthly[i].personal||D.monthly[i].investing){
+        selMonth=i; break;
+      }
+    }
+    if(selMonth<0 && D.monthly.length>0) selMonth=D.monthly.length-1;
+    render();
+  })
+  .withFailureHandler(function(e){
+    document.getElementById('root').innerHTML='<div class="error">❌ '+e.message+'</div>';
+  })
+  .getDashboardData();
+
+function render(){
+  var savPct = pct(D.tSavings, D.tIncome);
+  var savColor = savPct>=20?'#6bcb77':savPct>=10?'#ffd93d':'#ff6b6b';
+  var sel = selMonth>=0 ? D.monthly[selMonth] : {income:0,fixed:0,personal:0,investing:0,month:''};
+  var selSav = sel.income - sel.fixed - sel.personal - sel.investing;
+  var maxInc = 1;
+  for(var i=0;i<D.monthly.length;i++) if(D.monthly[i].income>maxInc) maxInc=D.monthly[i].income;
+  var maxExp = 1;
+  for(var i=0;i<D.monthly.length;i++){
+    var e=D.monthly[i].fixed+D.monthly[i].personal+D.monthly[i].investing;
+    if(e>maxExp) maxExp=e;
+  }
+  var maxBar = Math.max(maxInc,maxExp,1);
+
+  // Donut
+  var cats=[
+    {label:'Fixed',   val:sel.fixed,    color:'#ff6b6b'},
+    {label:'Personal',val:sel.personal, color:'#ffd93d'},
+    {label:'Investing',val:sel.investing,color:'#6bcb77'},
+    {label:'Savings', val:Math.max(selSav,0),color:'#4d96ff'}
+  ];
+  var donutTotal=0;
+  for(var i=0;i<cats.length;i++) donutTotal+=cats[i].val;
+  if(donutTotal===0) donutTotal=1;
+  var offset=0;
+  var segments='';
+  for(var i=0;i<cats.length;i++){
+    var p=(cats[i].val/donutTotal)*100;
+    var da=p*2.51+' '+(251-p*2.51);
+    var do2=-(offset*2.51)+62.75;
+    segments+='<circle cx="55" cy="55" r="40" fill="none" stroke="'+cats[i].color+'" stroke-width="14" stroke-dasharray="'+da+'" stroke-dashoffset="'+do2+'" style="transition:all 0.5s"/>';
+    offset+=p;
+  }
+
+  // Income bar html
+  var incBars='', expBars='';
+  for(var i=0;i<D.monthly.length;i++){
+    var m=D.monthly[i];
+    var isActive=(i===selMonth);
+    var h=Math.round((m.income/maxBar)*100);
+    incBars+='<div class="bar-col'+(isActive?' active':'')+'" onclick="selectMonth('+i+')">'
+      +'<div class="bar" style="background:#4d96ff;height:'+h+'px;opacity:'+(isActive?1:0.45)+'"></div>'
+      +'<div class="bar-lbl">'+m.month.split('-')[0]+'</div>'
+      +'</div>';
+    var hf=Math.round((m.fixed/maxBar)*50);
+    var hp=Math.round((m.personal/maxBar)*50);
+    var hi=Math.round((m.investing/maxBar)*50);
+    expBars+='<div class="stack-col" onclick="selectMonth('+i+') style="opacity:'+(isActive?1:0.45)+'">'
+      +'<div style="background:#6bcb77;height:'+hi+'px;min-height:'+(hi>0?1:0)+'px"></div>'
+      +'<div style="background:#ffd93d;height:'+hp+'px;min-height:'+(hp>0?1:0)+'px"></div>'
+      +'<div style="background:#ff6b6b;height:'+hf+'px;min-height:'+(hf>0?1:0)+'px"></div>'
+      +'</div>';
+  }
+
+  // Monthly table
+  var tableRows='';
+  for(var i=0;i<D.monthly.length;i++){
+    var m=D.monthly[i];
+    var sav=m.income-m.fixed-m.personal-m.investing;
+    tableRows+='<tr onclick="selectMonth('+i+')" style="cursor:pointer'+(i===selMonth?';background:rgba(77,150,255,0.08)':'')+'">'
+      +'<td style="font-weight:600">'+m.month+'</td>'
+      +'<td style="color:#4d96ff">'+fmtFull(m.income)+'</td>'
+      +'<td style="color:#ff6b6b">'+fmtFull(m.fixed)+'</td>'
+      +'<td style="color:#ffd93d">'+fmtFull(m.personal)+'</td>'
+      +'<td style="color:#6bcb77">'+fmtFull(m.investing)+'</td>'
+      +'<td class="'+(sav>=0?'pos':'neg')+'">'+fmtFull(sav)+'</td>'
+      +'</tr>';
+  }
+
+  // 3Y annual bars
+  var maxHorizon=1;
+  for(var i=0;i<D.threeYear.length;i++){
+    if(D.threeYear[i].totalSavings>maxHorizon) maxHorizon=D.threeYear[i].totalSavings;
+    if(D.threeYear[i].totalInvesting>maxHorizon) maxHorizon=D.threeYear[i].totalInvesting;
+  }
+  var annualBars='', annualCards='', threeYrTotal=0;
+  for(var i=0;i<D.threeYear.length;i++){
+    var yr=D.threeYear[i];
+    threeYrTotal+=yr.totalSavings+yr.totalInvesting;
+    var hs=Math.round((yr.totalSavings/maxHorizon)*90);
+    var hv=Math.round((yr.totalInvesting/maxHorizon)*90);
+    annualBars+='<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px">'
+      +'<div style="display:flex;gap:4px;align-items:flex-end;height:95px">'
+      +'<div style="width:20px;background:#4d96ff;border-radius:3px 3px 0 0;height:'+hs+'px;min-height:2px"></div>'
+      +'<div style="width:20px;background:#6bcb77;border-radius:3px 3px 0 0;height:'+hv+'px;min-height:2px"></div>'
+      +'</div>'
+      +'<div style="font-size:9px;color:#555">'+yr.fy+'</div>'
+      +'</div>';
+    annualCards+='<div class="yr-card'+(yr.fy===D.fyLabel?' current':'')+'">'
+      +'<div><div style="font-size:11px;color:#888;font-weight:600;margin-bottom:3px">'+yr.fy+(yr.fy===D.fyLabel?' · Current':'')+'</div>'
+      +'<div style="font-size:11px;color:#555">💙 <span style="color:#4d96ff;font-weight:600">'+fmtL(yr.totalSavings)+'</span> saved &nbsp; 💚 <span style="color:#6bcb77;font-weight:600">'+fmtL(yr.totalInvesting)+'</span> invested</div></div>'
+      +'<div style="font-size:15px;font-weight:700;color:#e8e8f0">'+fmtL(yr.totalSavings+yr.totalInvesting)+'</div>'
+      +'</div>';
+  }
+
+  var html =
+  '<div class="header">'
+    +'<div><div class="fy">'+D.fyLabel+'</div><h1>💰 Budget Intelligence</h1></div>'
+    +'<div style="display:flex;gap:10px;align-items:center">'
+      +'<button class="horizon-btn'+(horizonOpen?' on':'')+'" onclick="toggleHorizon()">📊 3Y Horizon '+(horizonOpen?'▲':'▼')+'</button>'
+      +'<div class="rate-box"><div class="rate-label">Savings Rate</div><div class="rate-val" style="color:'+savColor+'">'+savPct+'%</div></div>'
+    +'</div>'
+  +'</div>'
+
+  +'<div class="status">'
+    +'<span>🕐 Updated: <span style="color:#4d96ff">'+D.meta.lastUpdated+'</span></span>'
+    +'<span>📅 Last Txn: <span style="color:#6bcb77">'+D.meta.lastTxnDate+'</span></span>'
+    +'<span>🏦 Balance: <span style="color:#ffd93d">₹'+parseFloat(D.meta.closingBalance).toLocaleString('en-IN')+'</span></span>'
+    +'<span>⚠️ Uncategorized: <span style="color:'+(D.meta.uncategorized>0?'#ff6b6b':'#6bcb77')+'">'+D.meta.uncategorized+'</span></span>'
+  +'</div>'
+
+  +'<div class="body">'
+
+  // 3Y horizon
+  +'<div class="horizon-panel'+(horizonOpen?' open':'')+'" id="hPanel">'
+    +'<div class="horizon-inner">'
+      +'<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">'
+        +'<div style="font-size:13px;font-weight:700;color:#6bcb77">📈 3-Year Savings & Investment Horizon</div>'
+        +'<div class="tabs">'
+          +'<div class="tab'+(horizonTab==='annual'?' on':'')+'" onclick="setHTab(\'annual\')">Annual</div>'
+          +'<div class="tab'+(horizonTab==='monthly'?' on':'')+'" onclick="setHTab(\'monthly\')">Monthly</div>'
+        +'</div>'
+      +'</div>'
+      +(horizonTab==='annual'?
+        '<div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">'
+          +'<div>'
+            +'<div style="display:flex;gap:16px;align-items:flex-end;height:110px;padding-bottom:8px">'+annualBars+'</div>'
+            +'<div class="legend" style="margin-top:6px">'
+              +'<div class="leg"><div class="leg-dot" style="background:#4d96ff"></div>Savings</div>'
+              +'<div class="leg"><div class="leg-dot" style="background:#6bcb77"></div>Investing</div>'
+            +'</div>'
+          +'</div>'
+          +'<div>'+annualCards
+            +'<div class="total-card"><div style="font-size:11px;font-weight:700;color:#4d96ff">3-Year Total Wealth Built</div>'
+            +'<div style="font-size:16px;font-weight:800;color:#4d96ff">'+fmtL(threeYrTotal)+'</div></div>'
+          +'</div>'
+        +'</div>'
+      :
+        '<div style="font-size:11px;color:#555;margin-bottom:10px">Select FY to see monthly breakdown</div>'
+        +'<div class="fy-tabs">'
+          +D.threeYear.map(function(yr){
+            return '<div class="tab'+(horizonFY===yr.fy?' on':'')+'" onclick="setHFY(\''+yr.fy+'\')">'+yr.fy+'</div>';
+          }).join('')
+        +'</div>'
+      )
+    +'</div>'
+  +'</div>'
+
+  // YTD cards
+  +'<div class="cards">'
+    +[
+      {icon:'💰',label:'Total Income',   val:D.tIncome,   color:'#4d96ff', sub:'year to date'},
+      {icon:'🔒',label:'Fixed Expenses', val:D.tFixed,    color:'#ff6b6b', sub:pct(D.tFixed,D.tIncome)+'% of income'},
+      {icon:'🛒',label:'Personal Spend', val:D.tPersonal, color:'#ffd93d', sub:pct(D.tPersonal,D.tIncome)+'% of income'},
+      {icon:'📈',label:'Invested',       val:D.tInvest,   color:'#6bcb77', sub:pct(D.tInvest,D.tIncome)+'% of income'},
+      {icon:'💵',label:'Net Savings',    val:D.tSavings,  color:D.tSavings>=0?'#6bcb77':'#ff6b6b', sub:D.tSavings>=0?'surplus':'deficit'}
+    ].map(function(c){
+      return '<div class="card" style="border-top:3px solid '+c.color+'">'
+        +'<div class="card-icon">'+c.icon+'</div>'
+        +'<div class="card-label">'+c.label+'</div>'
+        +'<div class="card-val" style="color:'+c.color+'">'+fmtL(c.val)+'</div>'
+        +'<div class="card-sub">'+c.sub+'</div>'
+        +'</div>';
+    }).join('')
+  +'</div>'
+
+  // Chart + Donut
+  +'<div class="grid2">'
+    +'<div class="panel">'
+      +'<div class="panel-title">📊 Monthly Overview — click a month to drill down</div>'
+      +'<div class="bars">'+incBars+'</div>'
+      +'<div class="stack">'+expBars+'</div>'
+      +'<div class="legend">'
+        +'<div class="leg"><div class="leg-dot" style="background:#4d96ff"></div>Income</div>'
+        +'<div class="leg"><div class="leg-dot" style="background:#ff6b6b"></div>Fixed</div>'
+        +'<div class="leg"><div class="leg-dot" style="background:#ffd93d"></div>Personal</div>'
+        +'<div class="leg"><div class="leg-dot" style="background:#6bcb77"></div>Invest</div>'
+      +'</div>'
+    +'</div>'
+
+    +'<div class="panel">'
+      +'<div class="panel-title">'+sel.month+' Breakdown</div>'
+      +'<div style="font-size:11px;color:#555;margin-bottom:12px">Income: <span style="color:#4d96ff;font-weight:600">'+fmtFull(sel.income)+'</span></div>'
+      +'<div class="donut-wrap">'
+        +'<svg width="110" height="110" style="transform:rotate(-90deg)">'
+          +'<circle cx="55" cy="55" r="40" fill="none" stroke="rgba(255,255,255,0.05)" stroke-width="14"/>'
+          +segments
+        +'</svg>'
+        +'<div class="donut-center">'
+          +'<div class="donut-lbl">saved</div>'
+          +'<div class="donut-pct" style="color:'+(selSav>=0?'#6bcb77':'#ff6b6b')+'">'+pct(Math.max(selSav,0),sel.income)+'%</div>'
+        +'</div>'
+      +'</div>'
+      +'<div class="cat-rows">'
+        +cats.map(function(c){
+          var p2=pct(c.val,sel.income);
+          return '<div>'
+            +'<div class="cat-row-label">'
+              +'<span class="cat-row-name">'+c.label+'</span>'
+              +'<span class="cat-row-val" style="color:'+c.color+'">'+fmtFull(c.val)+'</span>'
+            +'</div>'
+            +'<div class="prog-bg"><div class="prog-fill" style="width:'+Math.max(p2,0)+'%;background:'+c.color+'"></div></div>'
+            +'</div>';
+        }).join('')
+      +'</div>'
+    +'</div>'
+  +'</div>'
+
+  // Health score
+  +'<div class="health">'
+    +'<div>'
+      +'<div style="font-size:10px;color:#4d96ff;letter-spacing:2px;text-transform:uppercase;margin-bottom:4px">Financial Health</div>'
+      +'<div style="font-size:11px;color:#666">Savings rate, investment % and expense control</div>'
+    +'</div>'
+    +'<div class="health-gauges">'
+      +[
+        {label:'Savings Rate',score:savPct,                        target:20,color:'#4d96ff',inv:false},
+        {label:'Invest %',    score:pct(D.tInvest,D.tIncome),     target:15,color:'#6bcb77',inv:false},
+        {label:'Fixed %',     score:pct(D.tFixed,D.tIncome),      target:50,color:'#ff6b6b',inv:true}
+      ].map(function(g){
+        var good=g.inv?(g.score<=g.target):(g.score>=g.target);
+        var gc='conic-gradient('+g.color+' '+Math.min(g.score,100)*3.6+'deg,rgba(255,255,255,0.04) 0deg)';
+        return '<div class="gauge">'
+          +'<div class="gauge-ring" style="background:'+gc+'">'
+            +'<div class="gauge-inner" style="color:'+(good?'#6bcb77':'#ffd93d')+'">'+g.score+'%</div>'
+          +'</div>'
+          +'<div class="gauge-name">'+g.label+'</div>'
+          +'<div class="gauge-target">target '+(g.inv?'≤':'≥')+g.target+'%</div>'
+          +'</div>';
+      }).join('')
+    +'</div>'
+  +'</div>'
+
+  // Trend table
+  +'<div class="panel">'
+    +'<div class="panel-title">📅 Month-by-Month Trend</div>'
+    +'<table>'
+      +'<tr><th>Month</th><th>Income</th><th>Fixed Exp</th><th>Personal</th><th>Investing</th><th>Savings</th></tr>'
+      +tableRows
+    +'</table>'
+  +'</div>'
+
+  +'<div style="text-align:center;font-size:10px;color:#2a2a3a;margin-top:12px">Powered by Budget.AI · Live data from Google Sheets</div>'
+  +'</div>';
+
+  document.getElementById('root').innerHTML = html;
+}
+
+function selectMonth(idx){
+  selMonth = idx;
+  render();
+}
+
+function toggleHorizon(){
+  horizonOpen = !horizonOpen;
+  render();
+}
+
+function setHTab(tab){
+  horizonTab = tab;
+  render();
+}
+
+function setHFY(fy){
+  horizonFY = fy;
+  render();
+}
+</script>
+</body>
+</html>
