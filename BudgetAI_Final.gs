@@ -1,4 +1,4 @@
-const GROQ_API_KEY = "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";
+const GROQ_API_KEY = "";
 const GROQ_URL = "https://api.groq.com/openai/v1/chat/completions";
 const SPIKE_THRESHOLD_PERCENT = 50;
 const MONTH_NAMES = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
